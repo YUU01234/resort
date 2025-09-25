@@ -16,6 +16,11 @@ export type Application = {
   work_history: string
   desired_conditions: string
   status: string
+  person_in_charge: string | null
+  interview_date: string | null
+  interview_time: string | null
+  interview_location: string | null
+  interview_notes: string | null
   created_at: string
   updated_at: string
 }
