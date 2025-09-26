@@ -24,3 +24,30 @@ export type Application = {
   created_at: string
   updated_at: string
 }
+
+export type Staff = {
+  id: string
+  name: string
+  employee_id: string
+  department: string | null
+  position: string | null
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+export type Attendance = {
+  id: string
+  staff_id: string
+  staff_name: string
+  date: string
+  clock_in_time: string | null
+  clock_out_time: string | null
+  break_start_time: string | null
+  break_end_time: string | null
+  work_location: string | null
+  notes: string | null
+  status: string
+  created_at: string
+  updated_at: string
+}
