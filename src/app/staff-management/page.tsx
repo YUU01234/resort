@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { supabase, Staff, Attendance } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 
@@ -34,9 +34,9 @@ function StaffManagementContent() {
 
   useEffect(() => {
     fetchAttendances()
-  }, [selectedDate, viewMode, departmentFilter])
+  }, [fetchAttendances])
 
-  const fetchAttendances = async () => {
+  const fetchAttendances = useCallback(async () => {
     try {
       setLoading(true)
       let query = supabase
@@ -85,9 +85,9 @@ function StaffManagementContent() {
     } finally {
       setLoading(false)
     }
-  }
+    }, [selectedDate, viewMode, departmentFilter, calculateStats])
 
-  const calculateStats = (attendances: AttendanceWithStaff[]) => {
+    const calculateStats = useCallback((attendances: AttendanceWithStaff[]) => {
     const todayAttendances = attendances.filter(att => att.date === selectedDate)
     const uniqueStaff = new Set(todayAttendances.map(att => att.staff_id))
 
@@ -122,7 +122,7 @@ function StaffManagementContent() {
       clockedOutStaff: clockedOutCount,
       totalWorkingHours: totalHours
     })
-  }
+  }, [selectedDate])
 
   const getStatusBadge = (status: string) => {
     switch (status) {

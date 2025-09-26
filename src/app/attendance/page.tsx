@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 
@@ -60,11 +60,9 @@ export default function AttendancePage() {
     return () => clearInterval(timer)
   }, [])
 
-  useEffect(() => {
-    if (staffInfo) {
-      loadTodayData()
-    }
-  }, [staffInfo])
+    useEffect(() => {
+    loadTodayData()
+  }, [loadTodayData])
 
   const getCurrentLocation = async () => {
     if (navigator.geolocation) {
@@ -82,7 +80,7 @@ export default function AttendancePage() {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         })
-      } catch (error) {
+      } catch {
         setLocation({ address: '位置情報を取得できませんでした' })
       }
     } else {
@@ -113,7 +111,7 @@ export default function AttendancePage() {
     }
   }
 
-  const loadTodayData = async () => {
+  const loadTodayData = useCallback(async () => {
     if (!staffInfo) return
 
     try {
@@ -136,7 +134,7 @@ export default function AttendancePage() {
       console.error('Error loading attendance data:', error)
       setTodayAttendance(null)
     }
-  }
+  }, [staffInfo])
 
   const calculateCurrentEarnings = () => {
     if (!todayAttendance?.clock_in_time || !staffInfo?.hourlyRate) return 0
@@ -284,7 +282,7 @@ export default function AttendancePage() {
     }
   }
 
-  const handleEditTime = (type: 'clock_in' | 'clock_out' | 'break_start' | 'break_end', currentTimeVal?: string) => {
+  const handleEditTime = (type: 'clock_in' | 'clock_out' | 'break_start' | 'break_end') => {
     let actualTime: string | undefined
 
     switch (type) {
@@ -318,7 +316,7 @@ export default function AttendancePage() {
       const [hours, minutes] = editingRecord.time.split(':')
       const newDateTime = new Date(`${today}T${hours}:${minutes}:00.000Z`)
 
-      const updateData: any = {}
+      const updateData: Partial<AttendanceRecord> = {}
       switch (editingRecord.type) {
         case 'clock_in':
           updateData.clock_in_time = newDateTime.toISOString()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { supabase, type Application } from '@/lib/supabase'
 import Sidebar from '@/components/Sidebar'
 
@@ -36,9 +36,9 @@ function AdminPageContent() {
     fetchApplications()
   }, [])
 
-  useEffect(() => {
+    useEffect(() => {
     applyFilters()
-  }, [applications, filters])
+  }, [applyFilters])
 
   const fetchApplications = async () => {
     try {
@@ -57,7 +57,7 @@ function AdminPageContent() {
     }
   }
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = applications
 
     if (filters.from_id) {
@@ -95,7 +95,7 @@ function AdminPageContent() {
     }
 
     setFilteredApplications(filtered)
-  }
+  }, [applications, filters])
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
