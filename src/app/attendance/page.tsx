@@ -60,9 +60,11 @@ export default function AttendancePage() {
     return () => clearInterval(timer)
   }, [])
 
-    useEffect(() => {
-    loadTodayData()
-  }, [loadTodayData])
+  useEffect(() => {
+    if (staffInfo) {
+      loadTodayData()
+    }
+  }, [staffInfo, loadTodayData])
 
   const getCurrentLocation = async () => {
     if (navigator.geolocation) {

@@ -36,9 +36,9 @@ function AdminPageContent() {
     fetchApplications()
   }, [])
 
-    useEffect(() => {
+  useEffect(() => {
     applyFilters()
-  }, [applyFilters])
+  }, [applications, filters, applyFilters])
 
   const fetchApplications = async () => {
     try {
