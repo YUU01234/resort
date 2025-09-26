@@ -49,6 +49,31 @@ export default function AttendancePage() {
   // 田中太郎さんのID（DB上の実際のID）
   const STAFF_ID = '0d2af08d-85ef-4a6c-b506-740c3d61af2b'
 
+  const loadTodayData = useCallback(async () => {
+    if (!staffInfo) return
+
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      const { data, error } = await supabase
+        .from('attendances')
+        .select('*')
+        .eq('staff_id', STAFF_ID)
+        .eq('date', today)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error
+
+      if (data) {
+        setTodayAttendance(data as AttendanceRecord)
+      } else {
+        setTodayAttendance(null)
+      }
+    } catch (error) {
+      console.error('Error loading attendance data:', error)
+      setTodayAttendance(null)
+    }
+  }, [staffInfo])
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date())
@@ -112,31 +137,6 @@ export default function AttendancePage() {
       console.error('Error loading staff info:', error)
     }
   }
-
-  const loadTodayData = useCallback(async () => {
-    if (!staffInfo) return
-
-    try {
-      const today = new Date().toISOString().split('T')[0]
-      const { data, error } = await supabase
-        .from('attendances')
-        .select('*')
-        .eq('staff_id', STAFF_ID)
-        .eq('date', today)
-        .single()
-
-      if (error && error.code !== 'PGRST116') throw error
-
-      if (data) {
-        setTodayAttendance(data as AttendanceRecord)
-      } else {
-        setTodayAttendance(null)
-      }
-    } catch (error) {
-      console.error('Error loading attendance data:', error)
-      setTodayAttendance(null)
-    }
-  }, [staffInfo])
 
   const calculateCurrentEarnings = () => {
     if (!todayAttendance?.clock_in_time || !staffInfo?.hourlyRate) return 0

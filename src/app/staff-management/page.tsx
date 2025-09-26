@@ -32,9 +32,42 @@ function StaffManagementContent() {
 
   const departments = ['フロント', 'レストラン', 'ハウスキーピング', 'メンテナンス', '管理事務所']
 
-  useEffect(() => {
-    fetchAttendances()
-  }, [fetchAttendances])
+  const calculateStats = useCallback((attendances: AttendanceWithStaff[]) => {
+    const todayAttendances = attendances.filter(att => att.date === selectedDate)
+    const uniqueStaff = new Set(todayAttendances.map(att => att.staff_id))
+
+    const clockedInCount = todayAttendances.filter(att => att.status === 'clocked_in').length
+    const onBreakCount = todayAttendances.filter(att => att.status === 'on_break').length
+    const clockedOutCount = todayAttendances.filter(att => att.status === 'clocked_out').length
+
+    // Calculate total working hours
+    let totalHours = 0
+    todayAttendances.forEach(att => {
+      if (att.clock_in_time && att.clock_out_time) {
+        const clockIn = new Date(att.clock_in_time)
+        const clockOut = new Date(att.clock_out_time)
+        const hours = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60 * 60)
+
+        // Subtract break time if available
+        if (att.break_start_time && att.break_end_time) {
+          const breakStart = new Date(att.break_start_time)
+          const breakEnd = new Date(att.break_end_time)
+          const breakHours = (breakEnd.getTime() - breakStart.getTime()) / (1000 * 60 * 60)
+          totalHours += Math.max(0, hours - breakHours)
+        } else {
+          totalHours += hours
+        }
+      }
+    })
+
+    setStats({
+      totalStaff: uniqueStaff.size,
+      clockedInStaff: clockedInCount,
+      onBreakStaff: onBreakCount,
+      clockedOutStaff: clockedOutCount,
+      totalWorkingHours: totalHours
+    })
+  }, [selectedDate])
 
   const fetchAttendances = useCallback(async () => {
     try {
@@ -87,42 +120,9 @@ function StaffManagementContent() {
     }
     }, [selectedDate, viewMode, departmentFilter, calculateStats])
 
-    const calculateStats = useCallback((attendances: AttendanceWithStaff[]) => {
-    const todayAttendances = attendances.filter(att => att.date === selectedDate)
-    const uniqueStaff = new Set(todayAttendances.map(att => att.staff_id))
-
-    const clockedInCount = todayAttendances.filter(att => att.status === 'clocked_in').length
-    const onBreakCount = todayAttendances.filter(att => att.status === 'on_break').length
-    const clockedOutCount = todayAttendances.filter(att => att.status === 'clocked_out').length
-
-    // Calculate total working hours
-    let totalHours = 0
-    todayAttendances.forEach(att => {
-      if (att.clock_in_time && att.clock_out_time) {
-        const clockIn = new Date(att.clock_in_time)
-        const clockOut = new Date(att.clock_out_time)
-        const hours = (clockOut.getTime() - clockIn.getTime()) / (1000 * 60 * 60)
-
-        // Subtract break time if available
-        if (att.break_start_time && att.break_end_time) {
-          const breakStart = new Date(att.break_start_time)
-          const breakEnd = new Date(att.break_end_time)
-          const breakHours = (breakEnd.getTime() - breakStart.getTime()) / (1000 * 60 * 60)
-          totalHours += Math.max(0, hours - breakHours)
-        } else {
-          totalHours += hours
-        }
-      }
-    })
-
-    setStats({
-      totalStaff: uniqueStaff.size,
-      clockedInStaff: clockedInCount,
-      onBreakStaff: onBreakCount,
-      clockedOutStaff: clockedOutCount,
-      totalWorkingHours: totalHours
-    })
-  }, [selectedDate])
+  useEffect(() => {
+    fetchAttendances()
+  }, [fetchAttendances])
 
   const getStatusBadge = (status: string) => {
     switch (status) {

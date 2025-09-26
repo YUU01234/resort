@@ -32,14 +32,6 @@ function AdminPageContent() {
     date_to: ''
   })
 
-  useEffect(() => {
-    fetchApplications()
-  }, [])
-
-  useEffect(() => {
-    applyFilters()
-  }, [applications, filters, applyFilters])
-
   const fetchApplications = async () => {
     try {
       const { data, error } = await supabase
@@ -96,6 +88,14 @@ function AdminPageContent() {
 
     setFilteredApplications(filtered)
   }, [applications, filters])
+
+  useEffect(() => {
+    fetchApplications()
+  }, [])
+
+  useEffect(() => {
+    applyFilters()
+  }, [applications, filters, applyFilters])
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
